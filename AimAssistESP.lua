@@ -1,112 +1,168 @@
--- Script de Aim Assist e ESP
+-- Main Script
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+
+-- GUI Setup
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+local MainFrame = Instance.new("Frame", ScreenGui)
+local TabsFrame = Instance.new("Frame", MainFrame)
+local ContentFrame = Instance.new("Frame", MainFrame)
+
+-- Styling
+ScreenGui.Name = "TelekineseHub"
+MainFrame.Size = UDim2.new(0, 600, 0, 400)
+MainFrame.Position = UDim2.new(0.5, -300, 0.5, -200)
+MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+MainFrame.BorderSizePixel = 0
+
+TabsFrame.Size = UDim2.new(0, 100, 1, 0)
+TabsFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+TabsFrame.BorderSizePixel = 0
+
+ContentFrame.Position = UDim2.new(0, 100, 0, 0)
+ContentFrame.Size = UDim2.new(1, -100, 1, 0)
+ContentFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+ContentFrame.BorderSizePixel = 0
+
+-- Tabs
+local tabs = {"Aim Assist", "ESP", "Misc"}
+local currentTab = "Aim Assist"
+local tabButtons = {}
+
+for i, tab in ipairs(tabs) do
+    local button = Instance.new("TextButton", TabsFrame)
+    button.Size = UDim2.new(1, 0, 0, 50)
+    button.Position = UDim2.new(0, 0, 0, (i-1) * 50)
+    button.Text = tab
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    button.BorderSizePixel = 0
+    button.MouseButton1Click:Connect(function()
+        currentTab = tab
+        updateContent()
+    end)
+    table.insert(tabButtons, button)
+end
+
+-- Update content based on tab
+function updateContent()
+    for _, child in ipairs(ContentFrame:GetChildren()) do
+        if child:IsA("GuiObject") then
+            child:Destroy()
+        end
+    end
+    
+    if currentTab == "Aim Assist" then
+        createAimAssistContent()
+    elseif currentTab == "ESP" then
+        createESPContent()
+    elseif currentTab == "Misc" then
+        createMiscContent()
+    end
+end
+
+-- Aim Assist Content
+function createAimAssistContent()
+    local silentAimToggle = Instance.new("TextButton", ContentFrame)
+    silentAimToggle.Size = UDim2.new(0, 200, 0, 50)
+    silentAimToggle.Position = UDim2.new(0, 10, 0, 10)
+    silentAimToggle.Text = "Toggle Silent Aim"
+    silentAimToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    silentAimToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    silentAimToggle.BorderSizePixel = 0
+    silentAimToggle.MouseButton1Click:Connect(function()
+        silentAimEnabled = not silentAimEnabled
+        silentAimToggle.Text = silentAimEnabled and "Silent Aim: ON" or "Silent Aim: OFF"
+    end)
+
+    local fovSlider = Instance.new("TextButton", ContentFrame)
+    fovSlider.Size = UDim2.new(0, 200, 0, 50)
+    fovSlider.Position = UDim2.new(0, 10, 0, 70)
+    fovSlider.Text = "FOV: " .. silentAimFOV
+    fovSlider.TextColor3 = Color3.fromRGB(255, 255, 255)
+    fovSlider.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    fovSlider.BorderSizePixel = 0
+    fovSlider.MouseButton1Click:Connect(function()
+        silentAimFOV = (silentAimFOV + 10) % 360
+        fovSlider.Text = "FOV: " .. silentAimFOV
+        drawFOVCircle()
+    end)
+end
+
+-- ESP Content
+function createESPContent()
+    local espToggle = Instance.new("TextButton", ContentFrame)
+    espToggle.Size = UDim2.new(0, 200, 0, 50)
+    espToggle.Position = UDim2.new(0, 10, 0, 10)
+    espToggle.Text = "Toggle ESP"
+    espToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    espToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    espToggle.BorderSizePixel = 0
+    espToggle.MouseButton1Click:Connect(function()
+        espEnabled = not espEnabled
+        espToggle.Text = espEnabled and "ESP: ON" or "ESP: OFF"
+    end)
+
+    local tracersToggle = Instance.new("TextButton", ContentFrame)
+    tracersToggle.Size = UDim2.new(0, 200, 0, 50)
+    tracersToggle.Position = UDim2.new(0, 10, 0, 70)
+    tracersToggle.Text = "Toggle Tracers"
+    tracersToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    tracersToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    tracersToggle.BorderSizePixel = 0
+    tracersToggle.MouseButton1Click:Connect(function()
+        tracersEnabled = not tracersEnabled
+        tracersToggle.Text = tracersEnabled and "Tracers: ON" or "Tracers: OFF"
+    end)
+end
+
+-- Misc Content
+function createMiscContent()
+    local wallCheckToggle = Instance.new("TextButton", ContentFrame)
+    wallCheckToggle.Size = UDim2.new(0, 200, 0, 50)
+    wallCheckToggle.Position = UDim2.new(0, 10, 0, 10)
+    wallCheckToggle.Text = "Toggle Wall Check"
+    wallCheckToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    wallCheckToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    wallCheckToggle.BorderSizePixel = 0
+    wallCheckToggle.MouseButton1Click:Connect(function()
+        wallCheckEnabled = not wallCheckEnabled
+        wallCheckToggle.Text = wallCheckEnabled and "Wall Check: ON" or "Wall Check: OFF"
+    end)
+
+    local teamCheckToggle = Instance.new("TextButton", ContentFrame)
+    teamCheckToggle.Size = UDim2.new(0, 200, 0, 50)
+    teamCheckToggle.Position = UDim2.new(0, 10, 0, 70)
+    teamCheckToggle.Text = "Toggle Team Check"
+    teamCheckToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    teamCheckToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    teamCheckToggle.BorderSizePixel = 0
+    teamCheckToggle.MouseButton1Click:Connect(function()
+        teamCheckEnabled = not teamCheckEnabled
+        teamCheckToggle.Text = teamCheckEnabled and "Team Check: ON" or "Team Check: OFF"
+    end)
+end
+
+-- Initialize Content
+updateContent()
+
+-- Variables
 local espFrames = {}
 local tracersLines = {}
 local fovCircle
+local silentAimEnabled = false
+local silentAimFOV = 100
+local silentAimHSChance = 50
+local fovCircleEnabled = true
+local wallCheckEnabled = false
+local teamCheckEnabled = false
+local espEnabled = false
+local tracersEnabled = false
+local maxDistance = 1000
 
--- Função para desenhar ESP
-local function drawESP(player)
-    if player == LocalPlayer then return end
-    if teamCheck and player.Team == LocalPlayer.Team then return end
-    
-    local character = player.Character
-    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
-    
-    local rootPart = character.HumanoidRootPart
-    local distance = (LocalPlayer.Character.HumanoidRootPart.Position - rootPart.Position).magnitude
-    if distance > maxDistance then return end
-    
-    local screenPos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(rootPart.Position)
-    if onScreen then
-        if not espFrames[player] then
-            espFrames[player] = {}
-            espFrames[player].box = Drawing.new("Square")
-            espFrames[player].distanceText = Drawing.new("Text")
-        end
-        
-        espFrames[player].box.Size = Vector2.new(50, 100)
-        espFrames[player].box.Position = Vector2.new(screenPos.X - 25, screenPos.Y - 50)
-        espFrames[player].box.Color = Color3.fromRGB(255, 255, 255)
-        espFrames[player].box.Thickness = 1
-        espFrames[player].box.Transparency = 1
-        espFrames[player].box.Visible = espEnabled
-        
-        espFrames[player].distanceText.Text = tostring(math.floor(distance)) .. "m"
-        espFrames[player].distanceText.Position = Vector2.new(screenPos.X, screenPos.Y - 50)
-        espFrames[player].distanceText.Color = Color3.fromRGB(255, 255, 255)
-        espFrames[player].distanceText.Size = 16
-        espFrames[player].distanceText.Center = true
-        espFrames[player].distanceText.Outline = true
-        espFrames[player].distanceText.Visible = espEnabled
-    else
-        if espFrames[player] then
-            espFrames[player].box.Visible = false
-            espFrames[player].distanceText.Visible = false
-        end
-    end
-end
-
--- Função para desenhar Tracers
-local function drawTracers(player)
-    if player == LocalPlayer then return end
-    if teamCheck and player.Team == LocalPlayer.Team then return end
-    
-    local character = player.Character
-    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
-    
-    local rootPart = character.HumanoidRootPart
-    local distance = (LocalPlayer.Character.HumanoidRootPart.Position - rootPart.Position).magnitude
-    if distance > maxDistance then return end
-    
-    local screenPos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(rootPart.Position)
-    if onScreen then
-        if not tracersLines[player] then
-            tracersLines[player] = Drawing.new("Line")
-        end
-        
-        tracersLines[player].From = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
-        tracersLines[player].To = Vector2.new(screenPos.X, screenPos.Y)
-        tracersLines[player].Color = Color3.fromRGB(255, 255, 255)
-        tracersLines[player].Thickness = 1
-        tracersLines[player].Transparency = 1
-        tracersLines[player].Visible = tracersEnabled
-    else
-        if tracersLines[player] then
-            tracersLines[player].Visible = false
-        end
-    end
-end
-
--- Função para atualizar ESP e Tracers
-RunService.RenderStepped:Connect(function()
-    if espEnabled or tracersEnabled then
-        for _, player in pairs(Players:GetPlayers()) do
-            if espEnabled then
-                drawESP(player)
-            end
-            if tracersEnabled then
-                drawTracers(player)
-            end
-        end
-    end
-end)
-
--- Função para limpar ESP e Tracers
-Players.PlayerRemoving:Connect(function(player)
-    if espFrames[player] then
-        espFrames[player].box:Remove()
-        espFrames[player].distanceText:Remove()
-        espFrames[player] = nil
-    end
-    if tracersLines[player] then
-        tracersLines[player]:Remove()
-        tracersLines[player] = nil
-    end
-end)
-
--- Função para desenhar FOV Circle
+-- Function to Draw FOV Circle
 local function drawFOVCircle()
     if fovCircle then
         fovCircle:Remove()
@@ -123,33 +179,22 @@ local function drawFOVCircle()
     end
 end
 
--- Atualizar círculo de FOV a cada renderização
-RunService.RenderStepped:Connect(function()
-    if fovCircleEnabled then
-        fovCircle.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y / 2)
-        fovCircle.Visible = true
-    elseif fovCircle then
-        fovCircle.Visible = false
-    end
-end)
-
--- Função de Silent Aim
+-- Function to get closest player for Silent Aim
 local function getClosestPlayer()
     local closestPlayer = nil
     local shortestDistance = silentAimFOV
     
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer then
-            if teamCheck and player.Team == LocalPlayer.Team then continue end
+            if teamCheckEnabled and player.Team == LocalPlayer.Team then continue end
             local character = player.Character
             if not character or not character:FindFirstChild("HumanoidRootPart") then continue end
             local rootPart = character.HumanoidRootPart
-            local screenPos, onScreen = workspace.CurrentCamera:WorldToScreenPoint(rootPart.Position)
-            local distance = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y / 2)).Magnitude
-            
-            if onScreen and distance < shortestDistance then
-                closestPlayer = player
+            local screenPoint = workspace.CurrentCamera:WorldToViewportPoint(rootPart.Position)
+            local distance = (Vector2.new(screenPoint.X, screenPoint.Y) - Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y / 2)).Magnitude
+            if distance < shortestDistance then
                 shortestDistance = distance
+                closestPlayer = player
             end
         end
     end
@@ -157,22 +202,74 @@ local function getClosestPlayer()
     return closestPlayer
 end
 
--- Função para ajustar a mira automaticamente para o alvo
+-- Silent Aim Function
 local function silentAim()
+    if not silentAimEnabled then return end
+    
     local target = getClosestPlayer()
-    if target and math.random(1, 100) <= silentAimHSChance then
-        local head = target.Character:FindFirstChild("Head")
-        if head then
-            local aimPos = head.Position
-            local direction = (aimPos - workspace.CurrentCamera.CFrame.Position).Unit
-            workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position, workspace.CurrentCamera.CFrame.Position + direction)
-        end
-    end
+    if not target or not target.Character or not target.Character:FindFirstChild("Head") then return end
+    local head = target.Character.Head
+    
+    -- Perform aim adjustment
+    local aimPosition = head.Position
+    local screenPoint = workspace.CurrentCamera:WorldToViewportPoint(aimPosition)
+    mousemoveabs(screenPoint.X, screenPoint.Y)
 end
 
--- Conectar Silent Aim ao evento RenderStepped
+-- ESP and Tracers
 RunService.RenderStepped:Connect(function()
-    if silentAimEnabled then
-        silentAim()
+    -- Remove previous ESP and Tracers
+    for _, frame in pairs(espFrames) do
+        frame:Destroy()
     end
+    for _, line in pairs(tracersLines) do
+        line:Remove()
+    end
+    espFrames = {}
+    tracersLines = {}
+    
+    if espEnabled or tracersEnabled then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                if teamCheckEnabled and player.Team == LocalPlayer.Team then continue end
+                local character = player.Character
+                if not character or not character:FindFirstChild("HumanoidRootPart") then continue end
+                local rootPart = character.HumanoidRootPart
+                local distance = (LocalPlayer.Character.HumanoidRootPart.Position - rootPart.Position).Magnitude
+                if distance > maxDistance then continue end
+                
+                local screenPoint, onScreen = workspace.CurrentCamera:WorldToViewportPoint(rootPart.Position)
+                
+                -- ESP
+                if espEnabled and onScreen then
+                    local espFrame = Instance.new("Frame", ContentFrame)
+                    espFrame.Size = UDim2.new(0, 50, 0, 50)
+                    espFrame.Position = UDim2.new(0, screenPoint.X - 25, 0, screenPoint.Y - 25)
+                    espFrame.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+                    espFrame.BorderSizePixel = 0
+                    table.insert(espFrames, espFrame)
+                end
+                
+                -- Tracers
+                if tracersEnabled and onScreen then
+                    local tracerLine = Drawing.new("Line")
+                    tracerLine.From = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
+                    tracerLine.To = Vector2.new(screenPoint.X, screenPoint.Y)
+                    tracerLine.Color = Color3.fromRGB(255, 255, 255)
+                    tracerLine.Thickness = 1
+                    tracerLine.Transparency = 1
+                    tracerLine.Visible = true
+                    table.insert(tracersLines, tracerLine)
+                end
+            end
+        end
+    end
+    
+    -- Update FOV Circle
+    if fovCircleEnabled then
+        fovCircle.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y / 2)
+    end
+    
+    -- Perform Silent Aim
+    silentAim()
 end)
